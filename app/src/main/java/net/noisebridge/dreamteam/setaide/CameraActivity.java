@@ -12,6 +12,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
@@ -112,6 +113,7 @@ public class CameraActivity extends AppCompatActivity {
     private ImageReader mImageReader;
     private int mSensorOrientation;
     private File mFile;
+    private StreamConfigurationMap mStreamConfigurationMap;
     private final ImageReader.OnImageAvailableListener mOnImageAvailableListener = new ImageReader.OnImageAvailableListener() {
 
         @Override
@@ -328,6 +330,7 @@ public class CameraActivity extends AppCompatActivity {
             if (Objects.equals(cameraCharacteristics.get(CameraCharacteristics.LENS_FACING), CameraCharacteristics.LENS_FACING_BACK)) {
                 this.backCameraDeviceId = cameraId;
                 this.mSensorOrientation = cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+                this.mStreamConfigurationMap = cameraCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 break;
             }
         }
@@ -340,7 +343,11 @@ public class CameraActivity extends AppCompatActivity {
             if (!mCameraLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("timed out waiting to lock camera opening");
             }
-            mImageReader = ImageReader.newInstance(IMG_WIDTH, IMG_HEIGHT,
+            Size largest = Collections.max(
+                    Arrays.asList(this.mStreamConfigurationMap.getOutputSizes(ImageFormat.JPEG)),
+                    new CompareSizesByArea());
+            System.out.println("width=[" + largest.getWidth() + "] height=[" + largest.getHeight() + "]");
+            mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
                     ImageFormat.JPEG, /*maxImages*/2);
             mImageReader.setOnImageAvailableListener(
                     mOnImageAvailableListener, mBackgroundHandler);

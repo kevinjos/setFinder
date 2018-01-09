@@ -2,8 +2,11 @@ package net.noisebridge.dreamteam.setaide;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Display;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -14,17 +17,28 @@ import java.io.File;
 
 public class PictureActivity extends AppCompatActivity {
 
+    private Bitmap mScaledBitmap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        File img = (File) getIntent().getSerializableExtra("IMG");
-        Bitmap bitmap = BitmapFactory.decodeFile(img.getPath());
-        getIntent().removeExtra("IMG");
+        if (null == this.mScaledBitmap) {
+            File img = (File) getIntent().getSerializableExtra("IMG");
+            Bitmap bitmap = BitmapFactory.decodeFile(img.getPath());
 
+            Display display = getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            int width = size.x;
+            int height = size.y;
+            float scaleHt = (float) width / bitmap.getWidth();
+            this.mScaledBitmap = Bitmap.createScaledBitmap(bitmap, width, (int) (bitmap.getWidth() * scaleHt), true);
+        }
         setContentView(R.layout.activity_picture);
 
         ImageView imageView = findViewById(R.id.imageView);
-        imageView.setImageBitmap(bitmap);
+        imageView.setImageBitmap(this.mScaledBitmap);
     }
+
 }
