@@ -60,7 +60,7 @@ public class CameraActivity extends AppCompatActivity {
     private int IMG_WIDTH = 1920;
     private int IMG_HEIGHT = 1080;
 
-    private static class ImageSaver implements Runnable {
+    private class ImageSaver implements Runnable {
 
         private final Image mImage;
         private final File mFile;
@@ -90,6 +90,7 @@ public class CameraActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+                mFileLock.release();
             }
         }
 
@@ -102,6 +103,7 @@ public class CameraActivity extends AppCompatActivity {
     private SurfaceView mSurfaceView;
     private SurfaceHolder mSurfaceHolder;
     private Semaphore mCameraLock = new Semaphore(1);
+    private Semaphore mFileLock = new Semaphore(1);
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
     private CaptureRequest.Builder mPreviewRequestBuilder;
@@ -272,17 +274,25 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     public void openPicture(View view) {
-        /*
-        File outdir = this.getExternalFilesDir(null);
-        try {
-            this.mFile = File.createTempFile("setaid", ".jpg", outdir);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
         this.mFile = new File(this.getCacheDir(), "setaid-tmp.jpg");
 
+        try {
+            if (!this.mFileLock.tryAcquire(1000, TimeUnit.MILLISECONDS)) {
+                System.out.println("failed to aquire mFileLock pre-write");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         lockFocus();
+
+        try {
+            if (!this.mFileLock.tryAcquire(10000, TimeUnit.MILLISECONDS)) {
+                System.out.println("failed to aquire mFileLock post-write");
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         Intent intent = new Intent(this, PictureActivity.class);
         intent.putExtra("IMG", this.mFile);
