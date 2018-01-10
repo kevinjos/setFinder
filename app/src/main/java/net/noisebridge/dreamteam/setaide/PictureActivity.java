@@ -17,28 +17,21 @@ import java.io.File;
 
 public class PictureActivity extends AppCompatActivity {
 
-    private Bitmap mScaledBitmap;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (null == this.mScaledBitmap) {
-            File img = (File) getIntent().getSerializableExtra("IMG");
-            Bitmap bitmap = BitmapFactory.decodeFile(img.getPath());
-
-            Display display = getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            int width = size.x;
-            int height = size.y;
-            float scaleHt = (float) width / bitmap.getWidth();
-            this.mScaledBitmap = Bitmap.createScaledBitmap(bitmap, width, (int) (bitmap.getWidth() * scaleHt), true);
-        }
         setContentView(R.layout.activity_picture);
 
+        File img = (File) getIntent().getSerializableExtra("IMG");
+        Bitmap bitmap = BitmapFactory.decodeFile(img.getPath());
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        Bitmap mScaledBitmap = Bitmap.createScaledBitmap(bitmap, size.x, size.y, true);
+
         ImageView imageView = findViewById(R.id.imageView);
-        imageView.setImageBitmap(this.mScaledBitmap);
+        imageView.setImageBitmap(mScaledBitmap);
     }
 
 }

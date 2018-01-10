@@ -56,10 +56,8 @@ public class CameraActivity extends AppCompatActivity {
     private static final int STATE_WAITING_NON_PRECAPTURE = 3;
     private static final int STATE_PICTURE_TAKEN = 4;
 
-    private int SCREEN_WIDTH = 720;
-    private int SCREEN_HEIGHT = 480;
-    private int IMG_WIDTH = 1920;
-    private int IMG_HEIGHT = 1080;
+    private int SCREEN_WIDTH = 1280;
+    private int SCREEN_HEIGHT = 720;
 
     private class ImageSaver implements Runnable {
 
@@ -346,9 +344,8 @@ public class CameraActivity extends AppCompatActivity {
             Size largest = Collections.max(
                     Arrays.asList(this.mStreamConfigurationMap.getOutputSizes(ImageFormat.JPEG)),
                     new CompareSizesByArea());
-            System.out.println("width=[" + largest.getWidth() + "] height=[" + largest.getHeight() + "]");
             mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
-                    ImageFormat.JPEG, /*maxImages*/2);
+                    ImageFormat.JPEG, /*maxImages*/4);
             mImageReader.setOnImageAvailableListener(
                     mOnImageAvailableListener, mBackgroundHandler);
             mCameraManager.openCamera(backCameraDeviceId, mCameraDeviceStateCallBack, mBackgroundHandler);
